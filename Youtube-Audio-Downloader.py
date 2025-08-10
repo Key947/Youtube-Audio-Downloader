@@ -82,7 +82,6 @@ def on_download_click():
         return
     download_youtube_as_m4a(url)
 
-# --- GUI Setup ---
 root = tk.Tk()
 root.title("YouTube Music/Audio Downloader")
 root.geometry("500x250")
