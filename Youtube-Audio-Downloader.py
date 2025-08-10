@@ -7,6 +7,7 @@ def download_youtube_as_m4a(youtube_url):
     try:
         base_path = os.path.dirname(os.path.abspath(__file__))
 
+        # Step 1: Extract info first to check if it's a playlist
         info_opts = {
             'quiet': True,
             'extract_flat': False,
@@ -17,8 +18,9 @@ def download_youtube_as_m4a(youtube_url):
         with yt_dlp.YoutubeDL(info_opts) as info_ydl:
             info = info_ydl.extract_info(youtube_url, download=False)
 
+        # Step 2: Safer download options to avoid SABR streams
         ydl_opts = {
-            'format': 'bestaudio[ext=m4a]/bestaudio/best',  
+            'format': 'bestaudio[ext=m4a]/bestaudio/best',  # Prefer m4a, fallback to best
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'm4a',
@@ -26,20 +28,22 @@ def download_youtube_as_m4a(youtube_url):
             }],
             'noplaylist': False,
             'ignoreerrors': True,
-            'ignore_no_formats_error': True,  
+            'ignore_no_formats_error': True,  # Prevent crash if SABR-only
             'quiet': False,
-            'no_warnings': True,  
+            'no_warnings': True,  # Suppress most warnings
             'overwrites': False,
             'merge_output_format': 'm4a',
             'continuedl': True,
         }
 
         if 'entries' in info:
+            # Playlist case
             playlist_title = info.get('title', 'playlist')
             playlist_folder = os.path.join(base_path, playlist_title)
             os.makedirs(playlist_folder, exist_ok=True)
             ydl_opts['outtmpl'] = os.path.join(playlist_folder, '%(title)s.%(ext)s')
         else:
+            # Single video
             ydl_opts['outtmpl'] = os.path.join(base_path, '%(title)s.%(ext)s')
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -65,6 +69,7 @@ def on_download_click():
         return
     download_youtube_as_m4a(url)
 
+# --- GUI Setup ---
 root = tk.Tk()
 root.title("YouTube Music/Audio Downloader")
 root.geometry("500x200")
