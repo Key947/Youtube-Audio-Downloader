@@ -3,6 +3,17 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 
+def show_available_formats(youtube_url):
+    try:
+        opts = {
+            'listformats': True,
+            'quiet': False
+        }
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            ydl.extract_info(youtube_url, download=False)
+    except Exception as e:
+        messagebox.showerror("Error", str(e))
+
 def download_youtube_as_m4a(youtube_url):
     try:
         base_path = os.path.dirname(os.path.abspath(__file__))
@@ -15,8 +26,9 @@ def download_youtube_as_m4a(youtube_url):
 
         with yt_dlp.YoutubeDL(info_opts) as info_ydl:
             info = info_ydl.extract_info(youtube_url, download=False)
+
         ydl_opts = {
-            'format': 'bestaudio[ext=m4a]/bestaudio/best',  
+            'format': 'bestaudio[ext=m4a]/bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'm4a',
@@ -24,9 +36,9 @@ def download_youtube_as_m4a(youtube_url):
             }],
             'noplaylist': False,
             'ignoreerrors': True,
-            'ignore_no_formats_error': True,  
+            'ignore_no_formats_error': True,
             'quiet': False,
-            'no_warnings': True, 
+            'no_warnings': True,
             'overwrites': False,
             'merge_output_format': 'm4a',
             'continuedl': True,
@@ -56,6 +68,13 @@ def download_youtube_as_m4a(youtube_url):
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
+def on_list_click():
+    url = url_entry.get().strip()
+    if not url:
+        messagebox.showwarning("Input Needed", "Please enter a YouTube URL.")
+        return
+    show_available_formats(url)
+
 def on_download_click():
     url = url_entry.get().strip()
     if not url:
@@ -66,7 +85,7 @@ def on_download_click():
 # --- GUI Setup ---
 root = tk.Tk()
 root.title("YouTube Music/Audio Downloader")
-root.geometry("500x200")
+root.geometry("500x250")
 
 tk.Label(root, text="YouTube Video or Playlist URL:").pack(pady=5)
 url_entry = tk.Entry(root, width=60)
@@ -74,6 +93,8 @@ url_entry.pack()
 
 tk.Label(root, text="Files will be saved in the same directory as this script.").pack(pady=5)
 tk.Label(root, text="A new folder will be created using the playlist name if it's a playlist.").pack(pady=0)
-tk.Button(root, text="Download", command=on_download_click, bg="green", fg="white").pack(pady=20)
+
+tk.Button(root, text="List Formats", command=on_list_click, bg="blue", fg="white").pack(pady=5)
+tk.Button(root, text="Download", command=on_download_click, bg="green", fg="white").pack(pady=10)
 
 root.mainloop()
